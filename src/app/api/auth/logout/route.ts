@@ -6,7 +6,7 @@ export const runtime = "edge";
 export async function POST() {
   const supabase = createSupabaseServerClient();
 
-  const { data: users, error: listError } = await supabase.auth.admin.listUsers({
+  const { error: listError } = await supabase.auth.admin.listUsers({
     page: 1,
     perPage: 1,
   });

@@ -22,7 +22,7 @@ const schema = z.object({
   meal_type: z.enum(["breakfast", "lunch", "dinner", "snack"]),
   photo_url: z.string().url().optional(),
   photo_storage_key: z.string().optional(),
-  source: z.enum(["ai", "manual"]).default("manual"),
+  source: z.enum(["ai", "manual"]).default("ai"),
   notes: z.string().optional(),
   items: z.array(itemSchema).min(1),
 });
