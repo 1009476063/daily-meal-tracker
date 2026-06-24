@@ -59,6 +59,16 @@ JSON schema:
 
 export async function recognizeFoodFromImage(imageUrl: string): Promise<RecognizeResult> {
   const env = getServerEnv();
+
+  if (!env.AI_BASE_URL || !env.AI_API_KEY || !env.AI_MODEL) {
+    return {
+      recognized: false,
+      items: [],
+      summary: { total_kcal: 0, total_protein_g: 0, total_fat_g: 0, total_carb_g: 0 },
+      suggestions: ["AI provider is not configured."],
+    };
+  }
+
   const res = await fetch(`${env.AI_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {

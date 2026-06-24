@@ -11,9 +11,9 @@ const serverEnvSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().min(1),
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_BUCKET: z.string().min(1),
-  AI_BASE_URL: z.string().url(),
-  AI_API_KEY: z.string().min(1),
-  AI_MODEL: z.string().min(1),
+  AI_BASE_URL: z.string().url().optional(),
+  AI_API_KEY: z.string().min(1).optional(),
+  AI_MODEL: z.string().min(1).optional(),
 });
 
 export function getClientEnv() {
