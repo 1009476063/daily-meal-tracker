@@ -1,7 +1,4 @@
 name = "daily-meal-tracker"
 compatibility_date = "2026-06-25"
 compatibility_flags = ["nodejs_compat"]
-
-# For Cloudflare Pages projects, wrangler.toml is mostly declarative.
-# Actual environment variables should be set in the Cloudflare dashboard
-# or via `wrangler pages secret put`.
+pages_build_output_dir = ".vercel/output/static"

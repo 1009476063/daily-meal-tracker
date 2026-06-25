@@ -1,10 +1,25 @@
 # Deploy to Cloudflare
 
-## Recommended path
-Cloudflare Pages with Functions / `@cloudflare/next-on-pages`.
+## Current deployment
+The project has been deployed to Cloudflare Pages.
 
-## Required environment variables
-Set these in Cloudflare Pages project settings before deployment:
+Production URL:
+- https://daily-meal-tracker.pages.dev
+
+## Build and deploy
+```bash
+npm ci
+npm run build
+npx wrangler pages deploy .vercel/output/static --project-name daily-meal-tracker --commit-dirty=true
+```
+
+Or:
+```bash
+./deploy.sh
+```
+
+## Environment variables
+Set these in Cloudflare Pages project settings before using protected features:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -20,18 +35,5 @@ Set these in Cloudflare Pages project settings before deployment:
 - `AI_MODEL`
 
 ## Notes
-- Public R2 URL must be enabled for image access.
-- Supabase project must already have the `meal_*` tables created.
-- Do not commit `.env.local` to Git.
-
-## Deploy steps
-1. `npm ci`
-2. `npm run build`
-3. `npx @cloudflare/next-on-pages`
-4. `npx wrangler pages deploy .vercel/output/static --project-name daily-meal-tracker`
-
-Or run the helper script:
-
-```bash
-./deploy.sh
-```
+- Public R2 access is required for photo display.
+- Supabase tables must already exist.
