@@ -34,6 +34,7 @@ export default function UploadMealPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RecognizeResult | null>(null);
   const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner" | "snack">("lunch");
+  const [resetKey, setResetKey] = useState(0);
 
   const resetState = () => {
     setResult(null);
@@ -97,11 +98,15 @@ export default function UploadMealPage() {
       if (!saveRes.ok) throw new Error(String(saveJson.error ?? "保存失败"));
 
       setStatus("done");
+      setResetKey((k) => k + 1);
+      if (inputRef.current) inputRef.current.value = "";
     } catch (err: unknown) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "处理失败");
     }
   };
+
+  const isBusy = status === "uploading" || status === "recognizing" || status === "saving";
 
   return (
     <div className="space-y-6">
@@ -129,17 +134,25 @@ export default function UploadMealPage() {
 
       <div className="rounded-3xl border border-[#e6e2d8] bg-white p-6 shadow-sm">
         <div
-          className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#d8d5c9] bg-[#faf9f5] px-6 py-12 text-center text-sm text-[#6b6a60] transition hover:border-[#b9b5a5]"
-          onClick={() => inputRef.current?.click()}
+          className={`flex flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-12 text-center text-sm transition ${
+            isBusy
+              ? "border-[#d8d5c9] bg-[#fdfcf9] text-[#a19f93] cursor-not-allowed"
+              : "border-[#d8d5c9] bg-[#faf9f5] text-[#6b6a60] cursor-pointer hover:border-[#b9b5a5]"
+          }`}
+          onClick={isBusy ? undefined : () => inputRef.current?.click()}
         >
-          <p className="text-base font-medium text-[#2f3029]">点击上传照片</p>
+          <p className="text-base font-medium text-[#2f3029]">
+            {isBusy ? "处理中，请稍候..." : "点击上传照片"}
+          </p>
           <p className="mt-1">支持 JPG / PNG / WebP</p>
           <input
+            key={resetKey}
             ref={inputRef}
             type="file"
             accept="image/*"
             className="hidden"
             onChange={handleFileChange}
+            disabled={isBusy}
           />
         </div>
 

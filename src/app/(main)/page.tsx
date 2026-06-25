@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSupabaseSession } from "@/lib/supabase-browser";
 import { MealCard } from "@/components/meals/meal-card";
 
@@ -37,7 +38,7 @@ const mealTypeLabel: Record<string, string> = {
 };
 
 export default function HomePage() {
-  const { session } = useSupabaseSession();
+  const { session, loading } = useSupabaseSession();
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
 
   useEffect(() => {
@@ -62,14 +63,31 @@ export default function HomePage() {
             <p className="mt-2 max-w-md text-sm text-[#6b6a60]">
               {summary
                 ? `蛋白 ${Math.round(summary.summary.total_protein_g)}g / 脂肪 ${Math.round(summary.summary.total_fat_g)}g / 碳水 ${Math.round(summary.summary.total_carb_g)}g`
-                : "先完成第一份饮食记录，系统会自动汇总热量与三大营养素。"}
+                : loading
+                  ? "正在加载今日数据..."
+                  : "先完成第一份饮食记录，系统会自动汇总热量与三大营养素。"}
             </p>
           </div>
-          <div className="rounded-2xl border border-dashed border-[#d8d5c9] bg-[#faf9f5] px-5 py-4 text-sm text-[#6b6a60]">
-            {summary ? "数据来自今日记录" : "记录后这里会实时更新"}
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/meals/upload"
+              className="rounded-2xl bg-[#5d7a5c] px-4 py-2 text-sm font-medium text-white hover:bg-[#4f6a4e]"
+            >
+              上传饮食
+            </Link>
+            <div className="rounded-2xl border border-dashed border-[#d8d5c9] bg-[#faf9f5] px-5 py-4 text-sm text-[#6b6a60]">
+              {summary ? "数据来自今日记录" : "记录后这里会实时更新"}
+            </div>
           </div>
         </div>
       </section>
+
+      {(summary?.meals ?? []).length === 0 ? (
+        <div className="rounded-3xl border border-[#e6e2d8] bg-white p-8 text-center text-sm text-[#6b6a60] shadow-sm">
+          <p className="text-base font-medium text-[#2f3029]">今天还没有记录</p>
+          <p className="mt-2">先拍一张食物照片，建立今天的第一条饮食记录。</p>
+        </div>
+      ) : null}
 
       {(summary?.meals ?? []).map((meal) => (
         <MealCard

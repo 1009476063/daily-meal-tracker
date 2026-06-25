@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 export async function POST(request: Request) {
   const cloned = request.clone();
-  let supabase = createSupabaseServerClient();
+  const supabase = createSupabaseServerClient();
   let user = null;
 
   const authHeader = request.headers.get("authorization");
