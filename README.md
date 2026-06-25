@@ -9,20 +9,30 @@ A modern web app for recording daily meals, recognizing food with AI, and storin
 - Cloudflare R2
 - OpenAI-compatible vision model
 
-## Commands
+## Local development
 
 ```bash
 npm install
+cp .env.example .env.local
+# fill in real values
 npm run dev
-npm run build
-npm start
 ```
 
-## Environment
+## Build
 
-Copy `.env.example` to `.env.local` and fill in real values before running locally.
+```bash
+npm run build
+```
+
+## Deploy to Cloudflare
+
+See `DEPLOY.md`.
+
+## Pre-launch checks
+
+See `CHECKLIST.md`.
 
 ## Notes
 
-- Public R2 URL must be enabled for image access.
-- Supabase tables use prefixed names to avoid conflicts with existing projects.
+- Supabase tables are prefixed with `meal_` to avoid affecting other projects.
+- Public R2 access is required for photo display.
