@@ -35,13 +35,18 @@ export default function UploadMealPage() {
   const [result, setResult] = useState<RecognizeResult | null>(null);
   const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner" | "snack">("lunch");
 
+  const resetState = () => {
+    setResult(null);
+    setError(null);
+    setStatus("idle");
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session?.user) return;
 
+    resetState();
     setPreview(URL.createObjectURL(file));
-    setResult(null);
-    setError(null);
     setStatus("uploading");
 
     try {
@@ -63,6 +68,18 @@ export default function UploadMealPage() {
       setResult(recognizeJson as RecognizeResult);
       setStatus("saving");
 
+      const items = (recognizeJson.items ?? []).map((item: RecognizedItem) => ({
+        name: item.name,
+        ingredients: item.ingredients ?? [],
+        portion_grams: item.portion_grams ?? null,
+        kcal: item.kcal ?? null,
+        protein_g: item.protein_g ?? null,
+        fat_g: item.fat_g ?? null,
+        carb_g: item.carb_g ?? null,
+        fiber_g: item.fiber_g ?? null,
+        confidence: item.confidence ?? null,
+      }));
+
       const saveRes = await fetch("/api/meals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,8 +89,8 @@ export default function UploadMealPage() {
           meal_type: mealType,
           photo_url: uploadJson.url,
           photo_storage_key: uploadJson.key,
-          source: "ai",
-          items: recognizeJson.items,
+          source: items.length ? "ai" : "manual",
+          items: items.length ? items : [{ name: "未识别食物", kcal: 0, protein_g: 0, fat_g: 0, carb_g: 0 }],
         }),
       });
       const saveJson = await saveRes.json();
