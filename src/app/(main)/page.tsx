@@ -8,6 +8,7 @@ type SummaryMeal = {
   id: string;
   meal_type: string;
   created_at: string;
+  photo_url: string | null;
   meal_items: {
     name: string;
     kcal: number | null;
@@ -75,6 +76,7 @@ export default function HomePage() {
           key={meal.id}
           title={mealTypeLabel[meal.meal_type] ?? meal.meal_type}
           time={new Date(meal.created_at).toLocaleTimeString()}
+          photoUrl={meal.photo_url}
           items={(meal.meal_items ?? []).map((item) => ({
             name: item.name,
             kcal: Number(item.kcal ?? 0),

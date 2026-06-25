@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
 
   const { data: meal, error: mealError } = await supabase
-    .from("meals")
+    .from("meal_meals")
     .insert({
       user_id,
       date,

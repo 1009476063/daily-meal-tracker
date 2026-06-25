@@ -15,8 +15,8 @@ export async function GET(request: Request) {
   const supabase = createSupabaseServerClient();
 
   const { data: meals, error } = await supabase
-    .from("meals")
-    .select("id, meal_type, created_at, meal_items(name, kcal, protein_g, fat_g, carb_g)")
+    .from("meal_meals")
+    .select("id, meal_type, created_at, photo_url, meal_items(name, kcal, protein_g, fat_g, carb_g)")
     .eq("user_id", userId)
     .eq("date", date)
     .order("created_at", { ascending: true });

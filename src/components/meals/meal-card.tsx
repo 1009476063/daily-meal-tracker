@@ -9,10 +9,12 @@ type Item = {
 export function MealCard({
   title,
   time,
+  photoUrl,
   items,
 }: {
   title: string;
   time?: string;
+  photoUrl?: string | null;
   items: Item[];
 }) {
   const total = items.reduce(
@@ -31,6 +33,14 @@ export function MealCard({
         <h3 className="text-base font-semibold">{title}</h3>
         {time ? <span className="text-xs text-[#8a887e]">{time}</span> : null}
       </div>
+
+      {photoUrl ? (
+        <div className="mb-4 overflow-hidden rounded-2xl border border-[#e6e2d8] bg-[#faf9f5]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoUrl} alt={`${title} photo`} className="h-48 w-full object-cover" />
+        </div>
+      ) : null}
+
       <div className="space-y-3">
         {items.map((item, idx) => (
           <div key={idx} className="rounded-2xl bg-[#faf9f5] p-4">
