@@ -1,4 +1,4 @@
-create table meal_users (
+create table if not exists meal_users (
   id uuid primary key,
   email text unique not null,
   nickname text,
@@ -6,7 +6,7 @@ create table meal_users (
   created_at timestamptz default now()
 );
 
-create table meal_model_providers (
+create table if not exists meal_model_providers (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   base_url text not null,
@@ -17,7 +17,7 @@ create table meal_model_providers (
   created_at timestamptz default now()
 );
 
-create table meal_meals (
+create table if not exists meal_meals (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   date date not null,
@@ -29,7 +29,7 @@ create table meal_meals (
   created_at timestamptz default now()
 );
 
-create table meal_items (
+create table if not exists meal_items (
   id uuid primary key default gen_random_uuid(),
   meal_id uuid references meal_meals(id) on delete cascade,
   name text not null,
@@ -47,7 +47,7 @@ create table meal_items (
   created_at timestamptz default now()
 );
 
-create table meal_daily_summary (
+create table if not exists meal_daily_summary (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   date date not null,

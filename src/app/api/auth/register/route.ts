@@ -27,21 +27,12 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    if (error.message.toLowerCase().includes("users")) {
-      return NextResponse.json(
-        {
-          error: error.message,
-          hint: "Please create required tables in Supabase SQL Editor from supabase/schema.sql.",
-        },
-        { status: 400 }
-      );
-    }
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
   const userId = data.user.id;
 
-  const { error: profileError } = await supabase.from("users").upsert({
+  const { error: profileError } = await supabase.from("meal_users").upsert({
     id: userId,
     email,
     nickname: nickname ?? email.split("@")[0],
