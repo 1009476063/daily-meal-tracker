@@ -1,0 +1,9 @@
+name = "daily-meal-tracker"
+compatibility_date = "2026-06-25"
+compatibility_flags = ["nodejs_compat"]
+main = ".vercel/output/static/_worker.js"
+assets = ".vercel/output/static"
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = ""
+NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
