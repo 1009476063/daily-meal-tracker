@@ -11,8 +11,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "缺少 file" }, { status: 400 });
     }
 
-    const previewUrl = URL.createObjectURL(file);
-    const result = await recognizeFoodFromImage(previewUrl);
+    const arrayBuffer = await file.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mime = file.type || "image/jpeg";
+    const dataUrl = `data:${mime};base64,${base64}`;
+
+    const result = await recognizeFoodFromImage(dataUrl);
     return NextResponse.json(result);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "识别失败";
