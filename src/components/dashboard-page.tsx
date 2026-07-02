@@ -253,7 +253,7 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 py-6 space-y-5">
+      <main className="mx-auto max-w-5xl px-5 py-6 space-y-6">
         {/* Today summary */}
         <section className="overflow-hidden rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -296,9 +296,13 @@ export function DashboardPage() {
             <p className="text-base font-medium text-[#141613] dark:text-[#e8e6e0]">今天还没有记录</p>
             <p className="mt-2">先拍一张食物照片或手动录入，建立今天的第一条饮食记录。</p>
           </div>
-        ) : todayMeals.map((meal) => (
-          <MealCard key={meal.id} title={mealTypeLabel[meal.meal_type] ?? meal.meal_type} time={new Date(meal.created_at).toLocaleTimeString()} photoUrl={meal.photo_url} photoUrls={meal.photo_urls ?? undefined} items={mealCardItems(meal)} personCount={meal.person_count} mealAdvice={meal.meal_advice} dietaryStructureAdvice={meal.dietary_structure_advice} onDelete={() => handleDelete(meal.id)} deleting={deletingId === meal.id} />
-        ))}
+        ) : (
+          <section className="grid gap-5 md:grid-cols-2">
+            {todayMeals.map((meal) => (
+              <MealCard key={meal.id} title={mealTypeLabel[meal.meal_type] ?? meal.meal_type} time={new Date(meal.created_at).toLocaleTimeString()} photoUrl={meal.photo_url} photoUrls={meal.photo_urls ?? undefined} items={mealCardItems(meal)} personCount={meal.person_count} mealAdvice={meal.meal_advice} dietaryStructureAdvice={meal.dietary_structure_advice} onDelete={() => handleDelete(meal.id)} deleting={deletingId === meal.id} />
+            ))}
+          </section>
+        )}
 
         {/* Trends + report + export */}
         <section className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
