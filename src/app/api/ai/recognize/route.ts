@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { recognizeFoodFromImage } from "@/lib/ai";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
@@ -6,6 +7,11 @@ export const maxDuration = 120; // allow up to 120s for AI recognition
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 20 AI requests per user per 10 minutes
+    const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+    if (!rateLimit(`ai:${clientIp}`, 20, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: "请求过于频繁，请稍后再试（每10分钟最多20次）" }, { status: 429 });
+    }
     const body = await request.json();
     const imageUrl: string | undefined = body.image_url;
     const imageUrls: string[] | undefined = body.image_urls;
