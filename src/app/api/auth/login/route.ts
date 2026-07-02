@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export const runtime = "edge";
 
 const schema = z.object({
   email: z.string().email(),

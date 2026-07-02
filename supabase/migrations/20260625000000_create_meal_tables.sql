@@ -13,13 +13,13 @@ create table if not exists meal_model_providers (
   api_key_encrypted text,
   default_model text not null,
   enabled boolean default true,
-  created_by uuid references auth.users(id) on delete set null,
+  created_by uuid,
   created_at timestamptz default now()
 );
 
 create table if not exists meal_meals (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade,
+  user_id uuid not null,
   date date not null,
   meal_type text not null,
   photo_url text,
@@ -49,7 +49,7 @@ create table if not exists meal_items (
 
 create table if not exists meal_daily_summary (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade,
+  user_id uuid not null,
   date date not null,
   total_kcal numeric,
   total_protein_g numeric,

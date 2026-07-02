@@ -7,8 +7,8 @@ npm ci
 echo "Building Next.js..."
 npm run build
 
-echo "Preparing Cloudflare Pages output..."
-npx @cloudflare/next-on-pages
+echo "Building for Cloudflare..."
+npx @opennextjs/cloudflare build
 
-echo "Deploying to Cloudflare Pages..."
-npx wrangler pages deploy .vercel/output/static --project-name daily-meal-tracker --commit-dirty=true
+echo "Deploying to Cloudflare Workers..."
+npx wrangler deploy

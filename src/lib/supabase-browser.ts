@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient, Session } from "@supabase/supabase-js";
+import { createClient, type Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
 let client: ReturnType<typeof createClient> | null = null;
@@ -11,8 +11,14 @@ function getClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // During SSR or if env vars are missing, don't throw — return a lazy proxy
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    if (typeof window === "undefined") {
+      // SSR: return a no-op placeholder; real client created on hydration
+      return null as unknown as ReturnType<typeof createClient>;
+    }
+    console.error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    return null as unknown as ReturnType<typeof createClient>;
   }
 
   client = createClient(supabaseUrl, supabaseAnonKey);
@@ -31,6 +37,11 @@ export function useSupabaseSession() {
     let active = true;
 
     const supabase = getClient();
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (active) setSession(data.session ?? null);
       if (active) setLoading(false);

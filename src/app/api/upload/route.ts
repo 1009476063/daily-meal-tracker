@@ -1,38 +1,23 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { putObject } from "@/lib/r2";
 
-export const runtime = "edge";
 
 export async function POST(request: Request) {
   const cloned = request.clone();
-  const supabase = createSupabaseServerClient();
-  let user = null;
-
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabase.auth.getUser(token);
-    user = data.user;
-  }
-
   const formData = await cloned.formData();
   const file = formData.get("file");
   if (!file || !(file instanceof File)) {
     return NextResponse.json({ error: "缺少 file" }, { status: 400 });
   }
 
-  if (!user) {
-    const userId = formData.get("user_id");
-    const userEmail = formData.get("user_email");
-    if (!userId || !userEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    user = { id: String(userId), email: String(userEmail) } as { id: string; email: string };
+  const userId = String(formData.get("user_id") ?? "").trim();
+  const userEmail = String(formData.get("user_email") ?? "").trim();
+  if (!userId || !userEmail) {
+    return NextResponse.json({ error: "缺少 user_id 或 user_email" }, { status: 400 });
   }
 
   const arrayBuffer = await file.arrayBuffer();
-  const key = `uploads/${user.id}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+  const key = `uploads/${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
   const contentType = file.type || "application/octet-stream";
 
   try {

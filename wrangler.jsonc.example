@@ -1,0 +1,62 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "daily-meal-tracker",
+	"compatibility_date": "2026-06-25",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS",
+		"run_worker_first": true
+	},
+	"vars": {
+		"NEXT_PUBLIC_SUPABASE_URL": "YOUR_SUPABASE_URL",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
+		"SUPABASE_SERVICE_ROLE_KEY": "YOUR_SUPABASE_SERVICE_ROLE_KEY",
+		"R2_ACCOUNT_ID": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+		"R2_ACCESS_KEY_ID": "YOUR_R2_ACCESS_KEY_ID",
+		"R2_SECRET_ACCESS_KEY": "YOUR_R2_SECRET_ACCESS_KEY",
+		"R2_BUCKET": "meal-tracker-images",
+		"R2_PUBLIC_BASE_URL": "YOUR_R2_PUBLIC_BASE_URL",
+		"AI_BASE_URL": "YOUR_AI_BASE_URL",
+		"AI_API_KEY": "YOUR_AI_API_KEY",
+		"AI_MODEL": "YOUR_AI_MODEL"
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "daily-meal-tracker"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "NEXT_INC_CACHE_R2_BUCKET",
+			"bucket_name": "daily-meal-tracker-opennext-cache"
+		}
+	],
+	"images": {
+		"binding": "IMAGES"
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "DOQueueHandler",
+				"class_name": "DOQueueHandler"
+			},
+			{
+				"name": "DOShardedTagCache",
+				"class_name": "DOShardedTagCache"
+			},
+			{
+				"name": "BucketCachePurge",
+				"class_name": "BucketCachePurge"
+			}
+		]
+	}
+}

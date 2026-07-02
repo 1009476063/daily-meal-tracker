@@ -5,3 +5,8 @@ node_modules
 dist
 .env.local
 supabase/.temp
+
+# Cloudflare / build output
+.open-next
+wrangler.jsonc
+.wrangler
