@@ -71,7 +71,7 @@ export function MealCard({
  );
 
  return (
- <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+ <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-4 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
  <div className="mb-3 flex items-center justify-between">
  <div className="flex items-center gap-3">
  <h3 className="text-base font-semibold tracking-tight text-[#141613] dark:text-[#e8e6e0]">{title}</h3>
@@ -115,7 +115,7 @@ export function MealCard({
  ) : null;
  })() : null}
 
- <div className="space-y-2">
+ <div className="grid gap-2 sm:grid-cols-2">
  {items.map((item, idx) => (
  <div key={idx} className="rounded-lg border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-3">
  <div className="flex items-center justify-between">
@@ -145,8 +145,7 @@ export function MealCard({
  ))}
  </div>
 
- <div className="mt-2 space-y-2 text-sm text-[#3a4641] dark:text-[#c4c1b8]">
- <div className="rounded-lg bg-[#f0f6f4] dark:bg-[#1e2b27] p-3">
+ <div className="mt-2 rounded-lg bg-[#f0f6f4] dark:bg-[#1e2b27] p-3 text-sm text-[#3a4641] dark:text-[#c4c1b8]">
  <div className="font-semibold">合计：</div>
  <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[#4a493f] dark:text-[#b8b5ab] sm:grid-cols-3">
  <span>能量 {Math.round(total.kcal)} kcal</span>
@@ -167,17 +166,8 @@ export function MealCard({
  <div className="mt-1 text-xs text-[#4a493f] dark:text-[#b8b5ab]">👥 本餐为 {personCount} 人份</div>
  ) : null}
  </div>
- {mealAdvice ? (
- <div className="rounded-xl bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
- <span className="font-semibold">搭配建议：</span>{mealAdvice}
- </div>
- ) : null}
- {dietaryStructureAdvice ? (
- <div className="rounded-xl bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
- <span className="font-semibold">饮食结构建议：</span>{dietaryStructureAdvice}
- </div>
- ) : null}
- </div>
+ {mealAdvice ? <p className="mt-2 rounded-lg bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]"><span className="font-semibold">搭配建议：</span>{mealAdvice}</p> : null}
+ {dietaryStructureAdvice ? <p className="mt-2 rounded-lg bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]"><span className="font-semibold">饮食结构建议：</span>{dietaryStructureAdvice}</p> : null}
  </div>
  );
 }
