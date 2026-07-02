@@ -326,7 +326,7 @@ export default function UploadMealPage() {
 
  {mode ==="photo" ? (
  <div className="space-y-4">
- <div className="rounded-3xl border-2 border-dashed border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-8 text-center transition hover:border-[#b9b5a5] dark:hover:border-[#4a5a52]">
+ <div className="rounded-2xl border-2 border-dashed border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 text-center transition hover:border-[#b9b5a5] dark:hover:border-[#4a5a52]">
  <input
  key={resetKey}
  ref={inputRef}
@@ -399,7 +399,7 @@ export default function UploadMealPage() {
 
  {/* recognized result */}
  {result && result.items && result.items.length > 0 ? (
- <div className="rounded-3xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] space-y-4">
+ <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-4 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] space-y-4">
  {/* edit + save */}
  <div className="flex items-center justify-end">
  <button type="button" onClick={async () => {
@@ -448,7 +448,7 @@ export default function UploadMealPage() {
               });
             };
             return (
-              <div key={idx} className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b] p-4 space-y-3">
+              <div key={idx} className="rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-3 space-y-2">
                 <div className="flex items-center gap-3">
                   <input className="flex-1 rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-[#141613] dark:text-[#e8e6e0]" value={item.name} onChange={(e) => patch("name", e.target.value)} />
                   <input className="w-28 rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-right text-[#141613] dark:text-[#e8e6e0]" value={String(item.kcal ?? "")} onChange={(e) => patch("kcal", e.target.value)} placeholder="kcal" />
@@ -472,12 +472,12 @@ export default function UploadMealPage() {
           })}
 
  {result.meal_advice ? (
- <div className="rounded-2xl bg-[#f0f6f4] dark:bg-[#1e2b27] p-4 text-xs text-[#3a4641] dark:text-[#c4c1b8]">
+ <div className="rounded-xl bg-[#f0f6f4] dark:bg-[#1e2b27] p-3 text-xs text-[#3a4641] dark:text-[#c4c1b8]">
  <span className="font-semibold">搭配建议：</span>{result.meal_advice}
  </div>
  ) : null}
  {result.dietary_structure_advice ? (
- <div className="rounded-2xl bg-[#f7faf8] dark:bg-[#151e1b] p-4 text-xs text-[#3a4641] dark:text-[#c4c1b8]">
+ <div className="rounded-xl bg-[#f7faf8] dark:bg-[#151e1b] p-3 text-xs text-[#3a4641] dark:text-[#c4c1b8]">
  <span className="font-semibold">饮食结构建议：</span>{result.dietary_structure_advice}
  </div>
  ) : null}
@@ -486,9 +486,9 @@ export default function UploadMealPage() {
  </div>
  ) : (
  /* ── manual entry ── */
- <div className="rounded-3xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] space-y-4">
+ <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] space-y-4">
  {manualItems.map((item, idx) => (
- <div key={idx} className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b] p-4 space-y-3">
+ <div key={idx} className="rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-3 space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-sm font-medium text-[#5a615c] dark:text-[#9ca3af]">食物 {idx + 1}</span>
  {manualItems.length > 1 && (

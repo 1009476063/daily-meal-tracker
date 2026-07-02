@@ -71,8 +71,8 @@ export function MealCard({
  );
 
  return (
- <div className="rounded-3xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
- <div className="mb-4 flex items-center justify-between">
+ <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+ <div className="mb-3 flex items-center justify-between">
  <div className="flex items-center gap-3">
  <h3 className="text-base font-semibold tracking-tight text-[#141613] dark:text-[#e8e6e0]">{title}</h3>
  <Badge>{Math.round(total.kcal)} kcal</Badge>
@@ -96,7 +96,7 @@ export function MealCard({
  const images = (photoUrls && photoUrls.length > 0) ? photoUrls : (photoUrl ? [photoUrl] : []);
  const carouselId = `carousel-${title}-${images[0]?.slice(-8)}`;
  return images.length > 0 ? (
- <div className="relative mb-4 overflow-hidden rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b]">
+ <div className="relative mb-3 overflow-hidden rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b]">
  <div className="flex gap-2 overflow-x-auto scroll-smooth p-2 snap-x snap-mandatory" id={carouselId}>
  {images.map((src, i) => (
  <div key={i} className="flex-shrink-0 snap-center" style={{ minWidth: images.length > 1 ? '80%' : '100%' }}>
@@ -115,9 +115,9 @@ export function MealCard({
  ) : null;
  })() : null}
 
- <div className="space-y-3">
+ <div className="space-y-2">
  {items.map((item, idx) => (
- <div key={idx} className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b] p-4">
+ <div key={idx} className="rounded-lg border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-3">
  <div className="flex items-center justify-between">
  <span className="font-medium text-[#141613] dark:text-[#e8e6e0]">{item.name}</span>
  <span className="text-sm text-[#5a615c] dark:text-[#9ca3af]">{Math.round(item.kcal)} kcal</span>
@@ -145,8 +145,8 @@ export function MealCard({
  ))}
  </div>
 
- <div className="mt-4 space-y-3 text-sm text-[#3a4641] dark:text-[#c4c1b8]">
- <div className="rounded-2xl bg-[#f0f6f4] dark:bg-[#1e2b27] p-4">
+ <div className="mt-2 space-y-2 text-sm text-[#3a4641] dark:text-[#c4c1b8]">
+ <div className="rounded-lg bg-[#f0f6f4] dark:bg-[#1e2b27] p-3">
  <div className="font-semibold">合计：</div>
  <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[#4a493f] dark:text-[#b8b5ab] sm:grid-cols-3">
  <span>能量 {Math.round(total.kcal)} kcal</span>
@@ -168,12 +168,12 @@ export function MealCard({
  ) : null}
  </div>
  {mealAdvice ? (
- <div className="rounded-2xl bg-[#f8fbfa] dark:bg-[#151e1b] p-4 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
+ <div className="rounded-xl bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
  <span className="font-semibold">搭配建议：</span>{mealAdvice}
  </div>
  ) : null}
  {dietaryStructureAdvice ? (
- <div className="rounded-2xl bg-[#f8fbfa] dark:bg-[#151e1b] p-4 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
+ <div className="rounded-xl bg-[#f8fbfa] dark:bg-[#151e1b] p-3 text-xs leading-5 text-[#3a4641] dark:text-[#c4c1b8]">
  <span className="font-semibold">饮食结构建议：</span>{dietaryStructureAdvice}
  </div>
  ) : null}

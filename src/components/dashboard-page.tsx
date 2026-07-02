@@ -27,6 +27,9 @@ export function DashboardPage() {
 
   const [todaySummary, setTodaySummary] = useState<SummaryResponse | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const mealOrder = ["breakfast","lunch","dinner","snack"] as const;
+  const mealRank = Object.fromEntries(mealOrder.map((m,i)=>[m,i]));
+  const sortMeals = (arr: SummaryMeal[]) => [...arr].sort((a,b)=>((mealRank[a.meal_type]??9)-(mealRank[b.meal_type]??9)) || a.created_at.localeCompare(b.created_at));
   const [monthOffset, setMonthOffset] = useState(0);
   const [weeklyData, setWeeklyData] = useState<MonitoringData>(null);
   const [monthlyData, setMonthlyData] = useState<MonitoringData>(null);
@@ -180,7 +183,7 @@ export function DashboardPage() {
     setSelectedDay((prev) => (prev === dateStr ? null : dateStr));
   };
 
-  const todayMeals = todaySummary?.meals ?? [];
+  const todayMeals = sortMeals(todaySummary?.meals ?? []);
   const todaySummaryData = todaySummary?.summary ?? {
     total_kcal: 0, total_protein_g: 0, total_fat_g: 0, total_carb_g: 0,
     total_fiber_g: 0, total_saturated_fat_g: 0, total_sodium_mg: 0,
@@ -190,7 +193,7 @@ export function DashboardPage() {
 
   // Helper to render a monitoring card
   const renderMonitoringCard = (title: string, subtitle: string, data: MonitoringData, okLabel: string) => (
-    <div className="rounded-[2rem] border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm">
+    <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
       <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
       <p className="mt-1 text-sm text-[#5a615c] dark:text-[#9ca3af]">{subtitle}</p>
       {data?.totals && data.days_with_data > 0 ? (
@@ -250,9 +253,9 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 py-8 space-y-8">
+      <main className="mx-auto max-w-4xl px-5 py-6 space-y-5">
         {/* Today summary */}
-        <section className="overflow-hidden rounded-[2rem] border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex-1">
               <p className="text-sm text-[#5a615c] dark:text-[#9ca3af]">今日概览</p>
@@ -289,7 +292,7 @@ export function DashboardPage() {
 
         {/* Today meals */}
         {todayMeals.length === 0 ? (
-          <div className="rounded-3xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-8 text-center text-sm text-[#5a615c] dark:text-[#9ca3af] shadow-sm">
+          <div className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 text-center text-sm text-[#5a615c] dark:text-[#9ca3af] shadow-sm">
             <p className="text-base font-medium text-[#141613] dark:text-[#e8e6e0]">今天还没有记录</p>
             <p className="mt-2">先拍一张食物照片或手动录入，建立今天的第一条饮食记录。</p>
           </div>
@@ -298,7 +301,7 @@ export function DashboardPage() {
         ))}
 
         {/* Trends + report + export */}
-        <section className="rounded-[2rem] border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm">
+        <section className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold tracking-tight">本月营养趋势</h3>
             <div className="flex gap-2">
@@ -352,7 +355,7 @@ export function DashboardPage() {
         </section>
 
         {/* Calendar */}
-        <section className="rounded-[2rem] border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm">
+        <section className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold tracking-tight">{monthBase.getFullYear()}年{monthBase.getMonth() + 1}月 饮食日历</h3>
             <div className="flex gap-2">
@@ -377,7 +380,7 @@ export function DashboardPage() {
           </div>
 
           {selectedDay && (
-            <div className="mt-6 rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-5">
+            <div className="mt-5 rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#151e1b] p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-base font-semibold tracking-tight">{formatDate(selectedDay)}</h4>
                 <button type="button" onClick={() => { setSelectedDay(null); setDayMeals(null); }} className="rounded-lg border border-[#e4e5e1] dark:border-[#2d3b36] px-2.5 py-1 text-xs text-[#5a615c] dark:text-[#9ca3af] hover:text-[#141613] dark:hover:text-[#e8e6e0] transition">收起</button>
@@ -385,7 +388,7 @@ export function DashboardPage() {
               {dayLoading ? <div className="py-8 text-center text-sm text-[#5a615c] dark:text-[#9ca3af]">加载中...</div>
                : dayMeals && dayMeals.meals.length > 0 ? (
                 <div className="space-y-3">
-                  {dayMeals.meals.map((meal) => (
+                  {sortMeals(dayMeals.meals).map((meal) => (
                     <MealCard key={meal.id} title={mealTypeLabel[meal.meal_type] ?? meal.meal_type} time={new Date(meal.created_at).toLocaleTimeString()} photoUrl={meal.photo_url} photoUrls={meal.photo_urls ?? undefined} items={mealCardItems(meal)} personCount={meal.person_count} mealAdvice={meal.meal_advice} dietaryStructureAdvice={meal.dietary_structure_advice} onDelete={() => handleDelete(meal.id)} deleting={deletingId === meal.id} />
                   ))}
                 </div>
