@@ -118,6 +118,9 @@ export default function UploadMealPage() {
  setStatus("uploading");
 
  try {
+ const { data: authSession } = await createSupabaseBrowserClient().auth.getSession();
+ const authToken = authSession.session?.access_token;
+ const authHeaders: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
  const uploaded: { url: string; key: string }[] = [];
  const newPreviews: string[] = [];
  for (let i = 0; i < files.length; i++) {
@@ -127,7 +130,7 @@ export default function UploadMealPage() {
  uploadForm.append("file", file);
  uploadForm.append("user_id", session.user.id);
  uploadForm.append("user_email", session.user.email ??"");
- const uploadRes = await fetch("/api/upload", { method:"POST", body: uploadForm });
+ const uploadRes = await fetch("/api/upload", { method:"POST", headers: authHeaders, body: uploadForm });
  const uploadJson = await uploadRes.json();
  if (!uploadRes.ok) throw new Error(String(uploadJson.error ??"上传失败"));
  uploaded.push({ url: uploadJson.url, key: uploadJson.key });
@@ -140,11 +143,9 @@ export default function UploadMealPage() {
  const recognizeTimeout = setTimeout(() => recognizeCtrl.abort(), 120_000);
  let recognizeRes: Response;
  try {
- const { data: recSess } = await createSupabaseBrowserClient().auth.getSession();
-        const recToken = recSess.session?.access_token;
-        recognizeRes = await fetch("/api/ai/recognize", {
+ recognizeRes = await fetch("/api/ai/recognize", {
  method:"POST",
- headers: {"Content-Type":"application/json" },
+ headers: {"Content-Type":"application/json", ...authHeaders },
  body: JSON.stringify({ image_urls: uploaded.map((u) => u.url), image_url: uploaded[0]?.url, person_count: personCount, user_id: session.user.id }),
  signal: recognizeCtrl.signal,
  });
@@ -183,14 +184,9 @@ export default function UploadMealPage() {
  confidence: item.confidence ?? null,
  }));
 
- const { data: sessData } = await createSupabaseBrowserClient().auth.getSession();
- const token = sessData.session?.access_token;
-
  const saveRes = await fetch("/api/meals", {
  method:"POST",
- headers: {"Content-Type":"application/json",
- ...(token ? { Authorization: `Bearer ${token}` } : {}),
- },
+ headers: {"Content-Type":"application/json", ...authHeaders },
  body: JSON.stringify({
  user_id: session.user.id,
  date: selectedDate,
@@ -233,6 +229,9 @@ export default function UploadMealPage() {
 
  setManualSaving(true);
  try {
+ const { data: manualAuthSession } = await createSupabaseBrowserClient().auth.getSession();
+ const manualAuthToken = manualAuthSession.session?.access_token;
+ const manualAuthHeaders: Record<string, string> = manualAuthToken ? { Authorization: `Bearer ${manualAuthToken}` } : {};
  const items = validItems.map((item) => ({
  name: item.name.trim(),
  ingredients: [],
@@ -255,14 +254,9 @@ export default function UploadMealPage() {
  confidence: null,
  }));
 
- const { data: sessData } = await createSupabaseBrowserClient().auth.getSession();
- const token = sessData.session?.access_token;
-
  const res = await fetch("/api/meals", {
  method:"POST",
- headers: {"Content-Type":"application/json",
- ...(token ? { Authorization: `Bearer ${token}` } : {}),
- },
+ headers: {"Content-Type":"application/json", ...manualAuthHeaders },
  body: JSON.stringify({
  user_id: session.user.id,
  date: selectedDate,
