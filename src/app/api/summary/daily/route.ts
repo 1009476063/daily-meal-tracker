@@ -1,28 +1,25 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthUser } from "@/lib/auth";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("user_id");
-    const date = searchParams.get("date");
+    const auth = await getAuthUser(request);
+    if ("error" in auth) return auth.error;
 
-    if (!userId || !date) {
-      return NextResponse.json({ error: "缺少 user_id 或 date" }, { status: 400 });
-    }
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+    if (!date) return NextResponse.json({ error: "缺少 date" }, { status: 400 });
 
     const supabase = createSupabaseServerClient();
-
     const { data: meals, error } = await supabase
       .from("meal_meals")
-      .select("id, meal_type, created_at, photo_url, photo_urls, person_count, meal_advice, dietary_structure_advice, meal_items(name, kcal, protein_g, fat_g, carb_g, fiber_g, portion_grams, saturated_fat_g, sodium_mg, calcium_mg, iron_mg, vitamin_c_mg, vitamin_a_mcg, sugar_g, cholesterol_mg, food_group, dietary_advice, confidence)")
-      .eq("user_id", userId)
+      .select("id, meal_type, created_at, photo_url, photo_urls, person_count, meal_advice, dietary_structure_advice, meal_items(*)")
+      .eq("user_id", auth.user.id)
       .eq("date", date)
       .order("created_at", { ascending: true });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
     const summary = (meals ?? []).reduce(
       (acc, meal) => {
@@ -43,26 +40,12 @@ export async function GET(request: Request) {
         }
         return acc;
       },
-      {
-        total_kcal: 0,
-        total_protein_g: 0,
-        total_fat_g: 0,
-        total_carb_g: 0,
-        total_fiber_g: 0,
-        total_saturated_fat_g: 0,
-        total_sodium_mg: 0,
-        total_calcium_mg: 0,
-        total_iron_mg: 0,
-        total_vitamin_c_mg: 0,
-        total_vitamin_a_mcg: 0,
-        total_sugar_g: 0,
-        total_cholesterol_mg: 0,
-      }
+      { total_kcal: 0, total_protein_g: 0, total_fat_g: 0, total_carb_g: 0, total_fiber_g: 0, total_saturated_fat_g: 0, total_sodium_mg: 0, total_calcium_mg: 0, total_iron_mg: 0, total_vitamin_c_mg: 0, total_vitamin_a_mcg: 0, total_sugar_g: 0, total_cholesterol_mg: 0 }
     );
 
     return NextResponse.json({ date, meals, summary });
   } catch (err) {
     console.error("[/api/summary/daily]", err);
-    return NextResponse.json({ error: "服务端错误", meals: [], summary: { total_kcal: 0, total_protein_g: 0, total_fat_g: 0, total_carb_g: 0, total_fiber_g: 0, total_saturated_fat_g: 0, total_sodium_mg: 0, total_calcium_mg: 0, total_iron_mg: 0, total_vitamin_c_mg: 0, total_vitamin_a_mcg: 0, total_sugar_g: 0, total_cholesterol_mg: 0 } }, { status: 500 });
+    return NextResponse.json({ error: "服务端错误" }, { status: 500 });
   }
 }

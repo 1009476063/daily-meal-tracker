@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
 export async function putObject(key: string, body: ArrayBuffer, contentType: string) {
   const accountId = process.env.R2_ACCOUNT_ID;
@@ -29,4 +29,28 @@ export async function putObject(key: string, body: ArrayBuffer, contentType: str
 
   const base = publicBaseUrl.replace(/\/+$/, "");
   return { key, url: `${base}/${key}` };
+}
+
+
+export async function deleteObjects(keys: string[]) {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const bucket = process.env.R2_BUCKET;
+
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucket) return;
+
+  const client = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId, secretAccessKey },
+    forcePathStyle: true,
+  });
+
+  await client.send(
+    new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: { Objects: keys.map((k) => ({ Key: k })) },
+    })
+  );
 }

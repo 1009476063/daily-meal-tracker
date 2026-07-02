@@ -1,31 +1,34 @@
 import { NextResponse } from "next/server";
 import { getServerEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthUser } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  const auth = await getAuthUser(request);
+  if ("error" in auth) return auth.error;
+
   try {
     const body = await request.json();
-    const userId: string | undefined = body.user_id;
     const env = getServerEnv();
 
     let baseUrl = env.AI_BASE_URL;
     let apiKey = env.AI_API_KEY;
     let model = env.AI_MODEL;
 
-    if (userId) {
-      try {
-        const supabase = createSupabaseServerClient();
-        const { data: settings } = await supabase
-          .from("meal_user_settings")
-          .select("ai_base_url, ai_api_key, ai_model")
-          .eq("user_id", userId)
-          .maybeSingle();
-        if (settings?.ai_base_url) baseUrl = settings.ai_base_url;
-        if (settings?.ai_api_key) apiKey = settings.ai_api_key;
-        if (settings?.ai_model) model = settings.ai_model;
-      } catch {}
-    }
+    // Load user's custom settings
+    try {
+      const supabase = createSupabaseServerClient();
+      const { data: settings } = await supabase
+        .from("meal_user_settings")
+        .select("ai_base_url, ai_api_key, ai_model")
+        .eq("user_id", auth.user.id)
+        .maybeSingle();
+      if (settings?.ai_base_url) baseUrl = settings.ai_base_url;
+      if (settings?.ai_api_key) apiKey = settings.ai_api_key;
+      if (settings?.ai_model) model = settings.ai_model;
+    } catch { /* fall through */ }
 
+    // Allow body overrides for testing
     if (body.ai_base_url) baseUrl = body.ai_base_url;
     if (body.ai_api_key) apiKey = body.ai_api_key;
     if (body.ai_model) model = body.ai_model;

@@ -90,7 +90,7 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
  const over = pct > 100;
  return (
  <div className="flex items-center gap-2">
- <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#e4e5e1]">
+ <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#e4e5e1] dark:bg-[#2d3b36]">
  <div
  className={`absolute left-0 top-0 h-full rounded-full transition-all ${over ? 'bg-[#b91c1c]' : color}`}
  style={{ width: `${Math.min(pct, 100)}%` }}
@@ -239,6 +239,16 @@ function LandingPage() {
 
 function DashboardPage() {
  const { session, loading } = useSupabaseSession();
+
+  const authFetch = async (url: string, init?: RequestInit) => {
+    const { createSupabaseBrowserClient } = await import("@/lib/supabase-browser");
+    const { data: sessData } = await createSupabaseBrowserClient().auth.getSession();
+    const token = sessData.session?.access_token;
+    return fetch(url, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    });
+  };
  const [todaySummary, setTodaySummary] = useState<SummaryResponse | null>(null);
  const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -299,12 +309,12 @@ function DashboardPage() {
  const endDate = fmt(sunday);
  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
- fetch(`/api/summary/weekly?user_id=${session.user.id}&start_date=${startDate}&end_date=${endDate}`)
+ authFetch(`/api/summary/weekly?user_id=${session.user.id}&start_date=${startDate}&end_date=${endDate}`)
  .then((r) => r.json())
  .then((d) => setWeeklyData(d))
  .catch(() => setWeeklyData(null));
 
- fetch(`/api/summary/monthly?user_id=${session.user.id}&month=${currentMonth}`)
+ authFetch(`/api/summary/monthly?user_id=${session.user.id}&month=${currentMonth}`)
  .then((r) => r.json())
  .then((d) => setMonthlyData(d))
  .catch(() => setMonthlyData(null));
@@ -314,7 +324,7 @@ function DashboardPage() {
  lastMonday.setDate(monday.getDate() - 7);
  const lastSunday = new Date(lastMonday);
  lastSunday.setDate(lastMonday.getDate() + 6);
- fetch(`/api/summary/weekly?user_id=${session.user.id}&start_date=${fmt(lastMonday)}&end_date=${fmt(lastSunday)}`)
+ authFetch(`/api/summary/weekly?user_id=${session.user.id}&start_date=${fmt(lastMonday)}&end_date=${fmt(lastSunday)}`)
  .then((r) => r.json())
  .then((d) => setLastWeekData(d))
  .catch(() => setLastWeekData(null));
@@ -322,7 +332,7 @@ function DashboardPage() {
  // Last month
  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
  const lastMonthStr = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
- fetch(`/api/summary/monthly?user_id=${session.user.id}&month=${lastMonthStr}`)
+ authFetch(`/api/summary/monthly?user_id=${session.user.id}&month=${lastMonthStr}`)
  .then((r) => r.json())
  .then((d) => setLastMonthData(d))
  .catch(() => setLastMonthData(null));
@@ -334,7 +344,7 @@ function DashboardPage() {
  const y = monthBase.getFullYear();
  const m = monthBase.getMonth();
  const monthStr = `${y}-${String(m + 1).padStart(2, '0')}`;
- fetch(`/api/summary/month-meals?user_id=${session.user.id}&month=${monthStr}`)
+ authFetch(`/api/summary/month-meals?user_id=${session.user.id}&month=${monthStr}`)
  .then((r) => r.json())
  .then((d) => setMonthMealMap(d.date_meal_count ?? {}))
  .catch(() => setMonthMealMap({}));
@@ -345,7 +355,7 @@ function DashboardPage() {
  if (!session?.user) return;
  const now = new Date();
  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
- fetch(`/api/summary/daily?user_id=${session.user.id}&date=${date}`)
+ authFetch(`/api/summary/daily?user_id=${session.user.id}&date=${date}`)
  .then((r) => r.json())
  .then((d: SummaryResponse) => setTodaySummary(d))
  .catch(() => {});
@@ -355,7 +365,7 @@ function DashboardPage() {
  useEffect(() => {
  if (!selectedDay || !session?.user) return;
  setDayLoading(true);
- fetch(`/api/summary/daily?user_id=${session.user.id}&date=${selectedDay}`)
+ authFetch(`/api/summary/daily?user_id=${session.user.id}&date=${selectedDay}`)
  .then((r) => r.json())
  .then((d: SummaryResponse) => setDayMeals(d))
  .catch(() => setDayMeals(null))

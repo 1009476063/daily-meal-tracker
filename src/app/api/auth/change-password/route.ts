@@ -1,24 +1,27 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthUser } from "@/lib/auth";
 
 const schema = z.object({
-  user_id: z.string().uuid(),
   new_password: z.string().min(6, "密码至少 6 位"),
 });
 
 export async function POST(request: Request) {
   try {
+    const auth = await getAuthUser(request);
+    if ("error" in auth) return auth.error;
+
     const body = await request.json();
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { user_id, new_password } = parsed.data;
+    const { new_password } = parsed.data;
     const supabase = createSupabaseServerClient();
 
-    const { data, error } = await supabase.auth.admin.updateUserById(user_id, {
+    const { data, error } = await supabase.auth.admin.updateUserById(auth.user.id, {
       password: new_password,
     });
 

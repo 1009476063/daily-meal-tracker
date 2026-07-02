@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-
+import { requireAuth } from "@/lib/auth";
 
 const itemSchema = z.object({
   name: z.string().min(1),
@@ -42,6 +42,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const auth = await requireAuth(request);
+  if ("error" in auth) return auth.error;
+
   const body = await request.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
@@ -49,39 +52,19 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseServerClient();
-  let { user_id, date, meal_type, photo_url, photo_storage_key, photo_urls, photo_storage_keys, source, notes, person_count, meal_advice, dietary_structure_advice, items } = parsed.data;
+  const userId = auth.user.id; // always use the authenticated user's ID
+  const { date, meal_type, photo_url, photo_storage_key, photo_urls, photo_storage_keys, source, notes, person_count, meal_advice, dietary_structure_advice, items } = parsed.data;
 
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabase.auth.getUser(token);
-    if (data.user) {
-      user_id = data.user.id;
-    }
-  }
-
-  const { data: existingUser } = await supabase
-    .from("meal_users")
-    .select("id")
-    .eq("id", user_id)
-    .maybeSingle();
-
+  // Ensure user exists
+  const { data: existingUser } = await supabase.from("meal_users").select("id").eq("id", userId).maybeSingle();
   if (!existingUser) {
-    const { error: createUserError } = await supabase.from("meal_users").upsert({
-      id: user_id,
-      email: `${user_id}@placeholder.local`,
-      nickname: "未命名用户",
-    });
-    if (createUserError) {
-      return NextResponse.json({ error: createUserError.message }, { status: 400 });
-    }
+    await supabase.from("meal_users").upsert({ id: userId, email: auth.user.email || `${userId}@placeholder.local`, nickname: "未命名用户" });
   }
-
 
   const { data: meal, error: mealError } = await supabase
     .from("meal_meals")
     .insert({
-      user_id,
+      user_id: userId,
       date,
       meal_type,
       photo_url,

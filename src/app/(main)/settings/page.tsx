@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from"react";
-import { useSupabaseSession } from"@/lib/supabase-browser";
+import { useSupabaseSession, createSupabaseBrowserClient } from"@/lib/supabase-browser";
 
 type Settings = {
  ai_base_url: string;
@@ -52,7 +52,7 @@ export default function SettingsPage() {
 
  useEffect(() => {
  if (!session?.user) return;
- fetch(`/api/settings?user_id=${session.user.id}`)
+ fetch(`/api/settings?user_id=${session.user.id}`, { headers: { Authorization: `Bearer ${session.access_token ?? ""}` } })
  .then((r) => r.json())
  .then((d) => {
  setSettings({
@@ -69,7 +69,7 @@ export default function SettingsPage() {
  .catch(() => {})
  .finally(() => setLoading(false));
 
- fetch("/api/settings/system-ai")
+ fetch("/api/settings/system-ai", { headers: { Authorization: `Bearer ${session.access_token ?? ""}` } })
  .then((r) => r.json())
  .then((d: SystemAi) => setSystemAi(d))
  .catch(() => {});
@@ -80,7 +80,9 @@ export default function SettingsPage() {
  setSaving(true);
  setMsg(null);
  try {
- const res = await fetch("/api/settings", {
+ const { data: sessD } = await createSupabaseBrowserClient().auth.getSession();
+        const settingsToken = sessD.session?.access_token;
+        const res = await fetch("/api/settings", {
  method:"PUT",
  headers: {"Content-Type":"application/json" },
  body: JSON.stringify({ user_id: session.user.id, ...settings }),

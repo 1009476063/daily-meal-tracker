@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { putObject } from "@/lib/r2";
-
+import { getAuthUser } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  const auth = await getAuthUser(request);
+  if ("error" in auth) return auth.error;
+
   const cloned = request.clone();
   const formData = await cloned.formData();
   const file = formData.get("file");
@@ -10,14 +13,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "缺少 file" }, { status: 400 });
   }
 
-  const userId = String(formData.get("user_id") ?? "").trim();
-  const userEmail = String(formData.get("user_email") ?? "").trim();
-  if (!userId || !userEmail) {
-    return NextResponse.json({ error: "缺少 user_id 或 user_email" }, { status: 400 });
-  }
-
   const arrayBuffer = await file.arrayBuffer();
-  const key = `uploads/${userId}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+
+  // Use local date for the R2 key path
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const key = `uploads/${auth.user.id}/${dateStr}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
   const contentType = file.type || "application/octet-stream";
 
   try {

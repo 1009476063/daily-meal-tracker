@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthUser } from "@/lib/auth";
 
 function emptyTotals() {
   return {
@@ -65,12 +66,14 @@ function sumItemTotals(totals: Record<string, number>, item: Record<string, unkn
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("user_id");
-    const month = searchParams.get("month"); // YYYY-MM
+    const auth = await getAuthUser(request);
+    if ("error" in auth) return auth.error;
 
-    if (!userId || !month || !/^\d{4}-\d{2}$/.test(month)) {
-      return NextResponse.json({ error: "缺少 user_id 或 month(YYYY-MM)" }, { status: 400 });
+    const { searchParams } = new URL(request.url);
+        const month = searchParams.get("month"); // YYYY-MM
+
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return NextResponse.json({ error: "缺少 month(YYYY-MM)" }, { status: 400 });
     }
 
     const startDate = `${month}-01`;
@@ -81,7 +84,7 @@ export async function GET(request: Request) {
     const { data: meals, error } = await supabase
       .from("meal_meals")
       .select("id, date, meal_type, created_at, photo_url, photo_urls, person_count, meal_advice, dietary_structure_advice, meal_items(name, kcal, protein_g, fat_g, carb_g, fiber_g, portion_grams, saturated_fat_g, sodium_mg, calcium_mg, iron_mg, vitamin_c_mg, vitamin_a_mcg, sugar_g, cholesterol_mg, food_group, dietary_advice, confidence)")
-      .eq("user_id", userId)
+      .eq("user_id", auth.user.id)
       .gte("date", startDate)
       .lte("date", endDate)
       .order("date", { ascending: true })
