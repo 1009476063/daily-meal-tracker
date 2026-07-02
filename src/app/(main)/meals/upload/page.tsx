@@ -17,25 +17,25 @@ function formatDate(dateStr: string): string {
 
 /* ── types ── */
 type RecognizedItem = {
- name: string;
- ingredients: string[];
- portion_grams: number;
- kcal: number;
- protein_g: number;
- fat_g: number;
- carb_g: number;
- fiber_g: number;
- saturated_fat_g?: number;
- sodium_mg?: number;
- calcium_mg?: number;
- iron_mg?: number;
- vitamin_c_mg?: number;
- vitamin_a_mcg?: number;
- sugar_g?: number;
- cholesterol_mg?: number;
- food_group?: string;
- dietary_advice?: string;
- confidence:"low" |"medium" |"high";
+  name: string;
+  ingredients: string[];
+  portion_grams: number | null;
+  kcal: number | null;
+  protein_g: number | null;
+  fat_g: number | null;
+  carb_g: number | null;
+  fiber_g: number | null;
+  saturated_fat_g: number | null;
+  sodium_mg: number | null;
+  calcium_mg: number | null;
+  iron_mg: number | null;
+  vitamin_c_mg: number | null;
+  vitamin_a_mcg: number | null;
+  sugar_g: number | null;
+  cholesterol_mg: number | null;
+  food_group: string | null;
+  dietary_advice: string | null;
+  confidence: "low" | "medium" | "high";
 };
 
 type RecognizeResult = {
@@ -160,50 +160,6 @@ export default function UploadMealPage() {
  const recognizeJson = await recognizeRes.json();
  if (!recognizeRes.ok) throw new Error(String(recognizeJson.error ??"识别失败"));
  setResult(recognizeJson as RecognizeResult);
-
- setStatus("saving");
- const items = (recognizeJson.items ?? []).map((item: RecognizedItem) => ({
- name: item.name,
- ingredients: item.ingredients ?? [],
- portion_grams: item.portion_grams ?? null,
- kcal: item.kcal ?? null,
- protein_g: item.protein_g ?? null,
- fat_g: item.fat_g ?? null,
- carb_g: item.carb_g ?? null,
- fiber_g: item.fiber_g ?? null,
- saturated_fat_g: item.saturated_fat_g ?? null,
- sodium_mg: item.sodium_mg ?? null,
- calcium_mg: item.calcium_mg ?? null,
- iron_mg: item.iron_mg ?? null,
- vitamin_c_mg: item.vitamin_c_mg ?? null,
- vitamin_a_mcg: item.vitamin_a_mcg ?? null,
- sugar_g: item.sugar_g ?? null,
- cholesterol_mg: item.cholesterol_mg ?? null,
- food_group: item.food_group ?? null,
- dietary_advice: item.dietary_advice ?? null,
- confidence: item.confidence ?? null,
- }));
-
- const saveRes = await fetch("/api/meals", {
- method:"POST",
- headers: {"Content-Type":"application/json", ...authHeaders },
- body: JSON.stringify({
- user_id: session.user.id,
- date: selectedDate,
- meal_type: mealType,
- photo_url: uploaded[0]?.url,
- photo_storage_key: uploaded[0]?.key,
- photo_urls: uploaded.map((u) => u.url),
- photo_storage_keys: uploaded.map((u) => u.key),
- source:"ai",
- person_count: recognizeJson.person_count ?? personCount,
- meal_advice: recognizeJson?.meal_advice ?? undefined,
- dietary_structure_advice: recognizeJson?.dietary_structure_advice ?? undefined,
- items,
- }),
- });
- const saveJson = await saveRes.json();
- if (!saveRes.ok) throw new Error(String(saveJson.error ??"保存失败"));
 
  setStatus("done");
  } catch (err) {
@@ -444,6 +400,38 @@ export default function UploadMealPage() {
  {/* recognized result */}
  {result && result.items && result.items.length > 0 ? (
  <div className="rounded-3xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-5 shadow-sm dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] space-y-4">
+ {/* edit + save */}
+ <div className="flex items-center justify-end">
+ <button type="button" onClick={async () => {
+ if (!session?.user) return;
+ try {
+ const { data: authSession } = await createSupabaseBrowserClient().auth.getSession();
+ const token = authSession.session?.access_token;
+ const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+ const saveRes = await fetch("/api/meals", {
+ method: "POST",
+ headers: { "Content-Type": "application/json", ...authHeaders },
+ body: JSON.stringify({
+ user_id: session.user.id,
+ date: selectedDate,
+ meal_type: mealType,
+ photo_urls: r2Urls.map((u) => u.url),
+ photo_storage_keys: r2Urls.map((u) => u.key),
+ source: "ai",
+ person_count: result.person_count ?? personCount,
+ meal_advice: result.meal_advice ?? undefined,
+ dietary_structure_advice: result.dietary_structure_advice ?? undefined,
+ items: result.items.map((it) => ({ ...it, ingredients: it.ingredients ?? [], dietary_advice: it.dietary_advice ?? null, food_group: it.food_group ?? null, confidence: it.confidence ?? null })),
+ }),
+ });
+ const json = await saveRes.json();
+ if (!saveRes.ok) throw new Error(String(json.error ?? "保存失败"));
+ setStatus("done");
+ } catch (err) {
+ setError(err instanceof Error ? err.message : String(err));
+ }
+ }} className="rounded-full bg-[#1f5e4b] dark:bg-[#166534] px-4 py-2 text-sm text-white dark:text-[#0f1412]">保存识别结果</button>
+ </div>
  <div className="flex items-center justify-between">
  <h3 className="text-base font-semibold tracking-tight text-[#141613] dark:text-[#e8e6e0]">识别结果</h3>
  {result.person_count && result.person_count > 1 ? (
@@ -451,33 +439,37 @@ export default function UploadMealPage() {
  ) : null}
  </div>
 
- {result.items.map((item, idx) => (
- <div key={idx} className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b] p-4">
- <div className="flex items-center justify-between">
- <span className="font-medium text-[#141613] dark:text-[#e8e6e0]">{item.name}</span>
- <span className="text-sm text-[#5a615c] dark:text-[#9ca3af]">{Math.round(item.kcal)} kcal</span>
- </div>
- <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[#5a615c] dark:text-[#9ca3af] sm:grid-cols-3">
- <span>蛋白 {item.protein_g ?? 0}g</span>
- <span>脂肪 {item.fat_g ?? 0}g</span>
- <span>碳水 {item.carb_g ?? 0}g</span>
- <span>膳食纤维 {item.fiber_g ?? 0}g</span>
- <span>饱和脂肪 {item.saturated_fat_g ?? 0}g</span>
- <span>钠 {item.sodium_mg ?? 0}mg</span>
- <span>钙 {item.calcium_mg ?? 0}mg</span>
- <span>铁 {item.iron_mg ?? 0}mg</span>
- <span>维C {item.vitamin_c_mg ?? 0}mg</span>
- <span>维A {item.vitamin_a_mcg ?? 0}μg</span>
- <span>糖 {item.sugar_g ?? 0}g</span>
- <span>胆固醇 {item.cholesterol_mg ?? 0}mg</span>
- {item.portion_grams ? <span>份量 {item.portion_grams}g</span> : null}
- {item.food_group ? <span>分类 {item.food_group}</span> : null}
- </div>
- {item.dietary_advice ? (
- <div className="mt-2 text-xs text-[#1f5e4b] dark:text-[#4ade80]">💡 {item.dietary_advice}</div>
- ) : null}
- </div>
- ))}
+ {result.items.map((item, idx) => {
+            const patch = (key: keyof RecognizedItem, value: string) => {
+              setResult((prev) => {
+                if (!prev) return prev;
+                const items = prev.items.map((it, i) => i === idx ? { ...it, [key]: value } : it);
+                return { ...prev, items };
+              });
+            };
+            return (
+              <div key={idx} className="rounded-2xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-[#faf9f5] dark:bg-[#0f1412] dark:bg-[#151e1b] p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <input className="flex-1 rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-[#141613] dark:text-[#e8e6e0]" value={item.name} onChange={(e) => patch("name", e.target.value)} />
+                  <input className="w-28 rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-right text-[#141613] dark:text-[#e8e6e0]" value={String(item.kcal ?? "")} onChange={(e) => patch("kcal", e.target.value)} placeholder="kcal" />
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {["protein_g","fat_g","carb_g","fiber_g","saturated_fat_g","sodium_mg","calcium_mg","iron_mg","vitamin_c_mg","vitamin_a_mcg","sugar_g","cholesterol_mg","portion_grams"].map((k) => (
+                    <label key={k} className="text-xs text-[#5a615c] dark:text-[#9ca3af]">
+                      <span className="mb-1 block">{k}</span>
+                      <input className="w-full rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-right text-[#141613] dark:text-[#e8e6e0]" value={String((item as unknown as Record<string, unknown>)[k] ?? "")} onChange={(e) => setResult((prev) => {
+                        if (!prev) return prev;
+                        const items = prev.items.map((it, i) => i === idx ? { ...it, [k]: e.target.value === "" ? null : Number(e.target.value) } : it);
+                        return { ...prev, items };
+                      })} />
+                    </label>
+                  ))}
+                </div>
+                <input className="w-full rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-[#141613] dark:text-[#e8e6e0]" value={item.food_group ?? ""} onChange={(e) => patch("food_group", e.target.value)} placeholder="食物分类" />
+                <textarea className="w-full rounded-xl border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] px-3 py-2 text-sm text-[#141613] dark:text-[#e8e6e0]" rows={2} value={item.dietary_advice ?? ""} onChange={(e) => patch("dietary_advice", e.target.value)} placeholder="该食物搭配建议" />
+              </div>
+            );
+          })}
 
  {result.meal_advice ? (
  <div className="rounded-2xl bg-[#f0f6f4] dark:bg-[#1e2b27] p-4 text-xs text-[#3a4641] dark:text-[#c4c1b8]">

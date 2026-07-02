@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import Link from "next/link";
 import { useSupabaseSession, createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { MealCard } from "@/components/meals/meal-card";
@@ -31,6 +32,7 @@ export function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<MonitoringData>(null);
   const [lastWeekData, setLastWeekData] = useState<MonitoringData>(null);
   const [lastMonthData, setLastMonthData] = useState<MonitoringData>(null);
+  const [trendsSeries, setTrendsSeries] = useState<{date:string;kcal:number;protein_g:number;fat_g:number;carb_g:number;fiber_g:number;sodium_mg:number;sugar_g:number;calcium_mg:number}[]>([]);
   const [monthMealMap, setMonthMealMap] = useState<Record<string, number>>({});
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [dayMeals, setDayMeals] = useState<SummaryResponse | null>(null);
@@ -112,6 +114,9 @@ export function DashboardPage() {
     const lastMonthStr = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
     authFetch(`/api/summary/monthly?user_id=${session.user.id}&month=${lastMonthStr}`)
       .then((r) => r.json()).then((d) => setLastMonthData(d)).catch(() => setLastMonthData(null));
+
+    authFetch(`/api/summary/trends?month=${currentMonth}`)
+      .then((r) => r.json()).then((d) => setTrendsSeries(d.series ?? [])).catch(() => setTrendsSeries([]));
   }, [session?.user]);
 
   // Fetch month calendar dots
@@ -291,6 +296,50 @@ export function DashboardPage() {
         ) : todayMeals.map((meal) => (
           <MealCard key={meal.id} title={mealTypeLabel[meal.meal_type] ?? meal.meal_type} time={new Date(meal.created_at).toLocaleTimeString()} photoUrl={meal.photo_url} photoUrls={meal.photo_urls ?? undefined} items={mealCardItems(meal)} personCount={meal.person_count} mealAdvice={meal.meal_advice} dietaryStructureAdvice={meal.dietary_structure_advice} onDelete={() => handleDelete(meal.id)} deleting={deletingId === meal.id} />
         ))}
+
+        {/* Trends + report + export */}
+        <section className="rounded-[2rem] border border-[#e4e5e1] dark:border-[#2d3b36] bg-white dark:bg-[#1a2120] p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold tracking-tight">本月营养趋势</h3>
+            <div className="flex gap-2">
+              <button type="button" onClick={async () => {
+                const month = `${monthBase.getFullYear()}-${String(monthBase.getMonth() + 1).padStart(2, "0")}`;
+                const res = await authFetch(`/api/report/monthly?month=${month}`);
+                const json = await res.json();
+                alert(json.summary ?? "暂无报告");
+              }} className="rounded-full border border-[#e4e5e1] dark:border-[#2d3b36] px-3 py-1.5 text-sm text-[#5a615c] dark:text-[#9ca3af]">生成月报告</button>
+              <button type="button" onClick={async () => {
+                const month = `${monthBase.getFullYear()}-${String(monthBase.getMonth() + 1).padStart(2, "0")}`;
+                const res = await authFetch(`/api/export/meals?month=${month}`);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `meals-${month}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              }} className="rounded-full border border-[#1f5e4b] dark:border-[#4ade80] px-3 py-1.5 text-sm text-[#1f5e4b] dark:text-[#4ade80]">导出本月数据</button>
+            </div>
+          </div>
+          <div className="mt-4 h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendsSeries} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="kcal" name="能量" stroke="#1f5e4b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="protein_g" name="蛋白质" stroke="#2563eb" dot={false} />
+                <Line type="monotone" dataKey="fat_g" name="脂肪" stroke="#d97706" dot={false} />
+                <Line type="monotone" dataKey="carb_g" name="碳水" stroke="#7c3aed" dot={false} />
+                <Line type="monotone" dataKey="sodium_mg" name="钠" stroke="#dc2626" dot={false} />
+                <Line type="monotone" dataKey="fiber_g" name="膳食纤维" stroke="#059669" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
 
         {/* Monitoring cards */}
         <section className="grid gap-6 md:grid-cols-2">
