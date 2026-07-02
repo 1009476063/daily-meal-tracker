@@ -15,8 +15,8 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
 export function LandingPage() {
   const steps = [
     { title: "多图上传", description: "支持同时上传多张食物照片，从不同角度拍摄同一餐食，AI 综合分析。" },
-    { title: "AI 精准识别", description: "基于中国食物成分表，识别菜名、食材、份量，计算 13 项营养指标。" },
-    { title: "营养追踪", description: "月日历记录、日/周/月监控卡、进度条对比中国膳食指南推荐量。" },
+    { title: "AI 精准识别", description: "基于中国食物成分表，识别菜名、食材、份量，计算 13 项营养指标，且识别结果可在线编辑后再保存。" },
+    { title: "营养追踪", description: "月日历记录、日/周/月监控卡、营养趋势图、进度条对比中国膳食指南推荐量。" },
   ];
 
   const features = [
@@ -24,8 +24,10 @@ export function LandingPage() {
     { icon: "🔬", title: "13 项营养指标", desc: "能量、蛋白质、脂肪、碳水、膳食纤维、饱和脂肪、钠、钙、铁、维生素A/C、糖、胆固醇，全面覆盖。" },
     { icon: "🤖", title: "自定义 AI 模型", desc: "支持配置不同的 AI 服务和模型（GPT-4o、Claude 等），一键测试连接。" },
     { icon: "👥", title: "多人食识别", desc: "AI 自动判断用餐人数，支持手动调整，按人数准确估算营养摄入。" },
-    { icon: "📅", title: "月日历视图", desc: "以日历形式查看每天的饮食记录，快速跳转到任意日期。" },
-    { icon: "📊", title: "健康监控", desc: "本周/上周/本月/上月摄入监控，自动检测钠超标、蛋白质不足等问题。" },
+    { icon: "📅", title: "月日历视图", desc: "以月历形式查看每天饮食记录，按早/午/晚/加餐顺序展示。" },
+    { icon: "📈", title: "营养趋势", desc: "按月展示能量、蛋白质、脂肪、碳水、膳食纤维、钠等趋势，快速识别波动。" },
+    { icon: "🧾", title: "膳食报告与导出", desc: "生成月度膳食报告并可导出 CSV，便于复查和分享。" },
+    { icon: "📴", title: "离线能力", desc: "支持基础离线缓存和 PWA，弱网下仍可顺畅访问。" },
     { icon: "💡", title: "搭配建议", desc: "每餐提供营养均衡度评价、食物搭配改善建议和饮食结构调整方案。" },
     { icon: "🌙", title: "亮暗主题", desc: "支持亮色/暗色主题切换，跟随系统偏好自动适应。" },
   ];
